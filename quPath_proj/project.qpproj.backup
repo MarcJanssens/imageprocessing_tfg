@@ -1,0 +1,24 @@
+{
+  "version": "0.5.1",
+  "createTimestamp": 1713974989800,
+  "modifyTimestamp": 1713974989800,
+  "uri": "file:/C:/Users/janss/Documents/TFG_GEB/imageprocessing_tfg/quPath_proj/project.qpproj",
+  "lastID": 1,
+  "images": [
+    {
+      "serverBuilder": {
+        "builderType": "uri",
+        "providerClassName": "qupath.lib.images.servers.bioformats.BioFormatsServerBuilder",
+        "uri": "file:/C:/Users/janss/Documents/TFG_GEB/imageprocessing_tfg/images/brain/dibuix_2_zoomed.png",
+        "args": [
+          "--series",
+          "0"
+        ]
+      },
+      "entryID": 1,
+      "randomizedName": "7cf8225d-d879-4894-82e7-243154fd4dd5",
+      "imageName": "dibuix_2_zoomed.png",
+      "metadata": {}
+    }
+  ]
+}
