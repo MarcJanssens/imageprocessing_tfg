@@ -13,10 +13,59 @@
         "args": [
           "--series",
           "0"
-        ]
+        ],
+        "metadata": {
+          "name": "dibuix_2_zoomed.png",
+          "width": 536,
+          "height": 536,
+          "sizeZ": 1,
+          "sizeT": 1,
+          "channelType": "DEFAULT",
+          "isRGB": true,
+          "pixelType": "UINT8",
+          "levels": [
+            {
+              "downsample": 1.0,
+              "width": 536,
+              "height": 536
+            }
+          ],
+          "channels": [
+            {
+              "name": "Red",
+              "color": -65536
+            },
+            {
+              "name": "Green",
+              "color": -16711936
+            },
+            {
+              "name": "Blue",
+              "color": -16776961
+            }
+          ],
+          "pixelCalibration": {
+            "pixelWidth": {
+              "value": 1.0,
+              "unit": "px"
+            },
+            "pixelHeight": {
+              "value": 1.0,
+              "unit": "px"
+            },
+            "zSpacing": {
+              "value": 1.0,
+              "unit": "z-slice"
+            },
+            "timeUnit": "SECONDS",
+            "timepoints": []
+          },
+          "preferredTileWidth": 536,
+          "preferredTileHeight": 489
+        }
       },
       "entryID": 1,
-      "randomizedName": "7cf8225d-d879-4894-82e7-243154fd4dd5",
+      "randomizedName": "e83df592-486b-4fd6-8d3d-a57461f634b8",
       "imageName": "dibuix_2_zoomed.png",
       "metadata": {}
     }
