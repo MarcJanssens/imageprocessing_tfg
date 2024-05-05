@@ -13,6 +13,22 @@ import numpy as np
 clicked_coordinates = []
 
 
+def on_click(event: int, x: int, y: int, flags, param) -> None:
+    """
+    Callback function for mouse click event.
+
+    Args:
+        event (int): The type of mouse event.
+        x (int): The x-coordinate of the mouse click.
+        y (int): The y-coordinate of the mouse click.
+        flags (int): Additional flags passed by OpenCV.
+        param (object): Additional parameters passed by OpenCV.
+    """
+
+    if event == cv2.EVENT_LBUTTONDOWN:
+        clicked_coordinates.append((x, y))
+
+
 def crop_center(image: np.ndarray, crop_width: int, crop_height: int) -> np.ndarray:
     """
     Crop the center portion of an image.
@@ -66,21 +82,6 @@ def distance(p1: tuple[int, int], p2: tuple[int, int]) -> float:
     return math.sqrt((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2)
 
 
-def on_click(event: int, x: int, y: int, flags, param) -> None:
-    """
-    Callback function for mouse click event.
-
-    Args:
-        event (int): The type of mouse event.
-        x (int): The x-coordinate of the mouse click.
-        y (int): The y-coordinate of the mouse click.
-        flags (int): Additional flags passed by OpenCV.
-        param (object): Additional parameters passed by OpenCV.
-    """
-    if event == cv2.EVENT_LBUTTONDOWN:
-        clicked_coordinates.append((x, y))
-
-
 def angle_between_points(p1: tuple[int, int], p2: tuple[int, int]) -> float:
     """
     Calculate the angle (in degrees) formed by three points, with p1 as the vertex.
@@ -92,26 +93,37 @@ def angle_between_points(p1: tuple[int, int], p2: tuple[int, int]) -> float:
     Returns:
         float: The angle (in degrees) formed by the three points.
     """
+    angle_degrees = 0
+    if p1 == p2:
+        return math.inf
+
     p3 = (p2[0], p1[1])
     a, b, c = distance(p2, p3), distance(p1, p3), distance(p1, p2)
-    cos_a = (c ** 2 + b ** 2 - a ** 2) / (2 * c * b)
-    angle_radians = math.acos(cos_a)
-    angle_degrees = math.degrees(angle_radians)
 
-    # Quadrant rectification
-    # Q1 do nothing
+    if b == 0:
+        if a > 0:
+            angle_degrees = 90
+        else:
+            angle_degrees = 270
+    elif c != 0:
+        cos_a = (c ** 2 + b ** 2 - a ** 2) / (2 * c * b)
+        angle_radians = math.acos(cos_a)
+        angle_degrees = math.degrees(angle_radians)
 
-    # Q2
-    if p2[0] < p1[0] and p2[1] > p1[1]:
-        angle_degrees = 180 - angle_degrees
+        # Quadrant rectification
+        # Q1 do nothing
 
-    # Q3
-    if p2[0] < p1[0] and p2[1] < p1[1]:
-        angle_degrees = angle_degrees + 180
+        # Q2
+        if p2[0] < p1[0] and p2[1] > p1[1]:
+            angle_degrees = 180 - angle_degrees
 
-    # Q4
-    if p2[0] > p1[0] and p2[1] < p1[1]:
-        angle_degrees = -1 * angle_degrees
+        # Q3
+        if p2[0] < p1[0] and p2[1] < p1[1]:
+            angle_degrees = angle_degrees + 180
+
+        # Q4
+        if p2[0] > p1[0] and p2[1] < p1[1]:
+            angle_degrees = -1 * angle_degrees
 
     return angle_degrees
 
@@ -150,12 +162,19 @@ def get_triangle_coordinates(image_path: str, window_name: str) -> list[tuple[in
     return clicked_coordinates[-3:]
 
 
-def main():
+def transformation_matrix(degrees: float, translation: tuple[int, int],scale_factor):
+    beta = math.radians(degrees)
+    tm_1 = [scale_factor*math.cos(beta), -1*scale_factor*math.sin(beta), translation[0]]
+    tm_2 = [math.sin(beta), scale_factor * math.cos(beta), translation[1]]
+    tm_3 = [0, 0, 1]
+    return np.array([tm_1, tm_2, tm_3])
 
+
+def main():
     # First we read the images
     path = 'images/brain/'
-    image_path_a = path + 'dibuix_1.png'
-    image_path_b = path + 'dibuix_2_zoomed.png'
+    image_path_a = path + 'dibuix_3.png'
+    image_path_b = path + 'dibuix_3.png'
 
     image_a = cv2.imread(image_path_a)
     image_b = cv2.imread(image_path_b)
@@ -173,16 +192,16 @@ def main():
     angle_b3 = angle_between_points(b_coord_2, b_coord_3)
 
     # Angle difference, three must be the same but as its manual, we do this to minimize human error
-    ddif_2 = angle_b2-angle_a2
-    ddif_3 = angle_b3-angle_a3
+    ddif_2 = angle_b2 - angle_a2
+    ddif_3 = angle_b3 - angle_a3
 
-    mean_ddif = (ddif_2 + ddif_3)/2
+    mean_ddif = (ddif_2 + ddif_3) / 2
 
     # Third, we find the scale factor
-    a_tri_perimeter = distance(a_coord_1, a_coord_2)+distance(a_coord_1, a_coord_3)+distance(a_coord_2, a_coord_3)
-    b_tri_perimeter = distance(b_coord_1, b_coord_2)+distance(b_coord_1, b_coord_3)+distance(b_coord_2, b_coord_3)
+    a_tri_perimeter = distance(a_coord_1, a_coord_2) + distance(a_coord_1, a_coord_3) + distance(a_coord_2, a_coord_3)
+    b_tri_perimeter = distance(b_coord_1, b_coord_2) + distance(b_coord_1, b_coord_3) + distance(b_coord_2, b_coord_3)
 
-    scale_factor = a_tri_perimeter/b_tri_perimeter
+    scale_factor = a_tri_perimeter / b_tri_perimeter
 
     # Next, we rotate the image
     rotated_b = rotate_image(image_b, mean_ddif)
@@ -197,12 +216,31 @@ def main():
     # We crop the image, so it matches size with the original
     cropped_image = crop_center(scaled_image, image_a.shape[1], image_a.shape[0])
 
-    process_image(rotated_b, "Rotated image")
+    cv2.imwrite('final_image.jpg', cropped_image)
 
     cv2.imshow('Original Image', image_a)
     cv2.imshow('Rotated Image', cropped_image)
+
     cv2.waitKey(0)
     cv2.destroyAllWindows()
+
+    process_image(cropped_image, "Click third flag")
+    new_point = clicked_coordinates[-1]
+    vector = (int(a_coord_3[0]) - int(new_point[0]), int(a_coord_3[1]) - int(new_point[1]))
+
+
+    print(new_point)
+    print(a_coord_3)
+    print(vector)
+    final_tm = transformation_matrix(mean_ddif, vector, scale_factor)
+    b_point = np.array([[new_point[0]],
+                        [new_point[1]],
+                        [1]])
+
+    original = np.dot(final_tm, b_point)
+
+    print(original)
+    print(a_coord_3)
 
 
 if __name__ == "__main__":
